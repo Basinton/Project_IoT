@@ -7,7 +7,7 @@ soil_moisture = [10, 3, 0, 7, 0, 1, 53, 203]
 
 ser = None  # Global variable to hold the serial port instance
 
-def initialize_modbus(port='/dev/ttyUSB0', baudrate=115200, timeout=1):
+def initialize_modbus(port='/dev/ttyUSB0', baudrate=9600, timeout=1):
     global ser
     if ser is None:
         try:
