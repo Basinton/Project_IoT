@@ -80,27 +80,27 @@ def setDevice(device_id, state):
 
 # Example usage for controlling actuators
 if ser:
-    while True:
-        for mixer_id in fertilizer_mixers:
-            setDevice(ser, mixer_id, True)
-            time.sleep(2)
-            setDevice(ser, mixer_id, False)
-            time.sleep(2)
-
-        for selector_id in area_selectors:
-            setDevice(ser, selector_id, True)
-            time.sleep(2)
-            setDevice(ser, selector_id, False)
-            time.sleep(2)
-        
-        setDevice(ser, pump_in, True)
+    # Example of controlling fertilizer mixers
+    for mixer_id in fertilizer_mixers:
+        setDevice(mixer_id, True)  # Turn on
         time.sleep(2)
-        setDevice(ser, pump_in, False)
+        setDevice(mixer_id, False)  # Turn off
         time.sleep(2)
 
-        setDevice(ser, pump_out, True)
+# Example of controlling area selectors
+    for selector_id in area_selectors:
+        setDevice(selector_id, True)  # Activate area
         time.sleep(2)
-        setDevice(ser, pump_out, False)
+        setDevice(selector_id, False)  # Deactivate area
         time.sleep(2)
+
+# Example of controlling pumps
+    setDevice(pump_in, True)  # Turn on pump in
+    time.sleep(2)
+    setDevice(pump_in, False)  # Turn off pump in
+    time.sleep(2)
+    setDevice(pump_out, True)  # Turn on pump out
+    time.sleep(2)
+    setDevice(pump_out, False)  # Turn off pump out
 else:
     print("Serial port is not available. Cannot proceed with setting devices.")
