@@ -16,6 +16,16 @@ class WaterMonitoringTask:
             'iot-project.pump-out': self.init_feed('iot-project.pump-out')
         }
 
+        # Maintain previous states to detect changes
+        self.previous_states = {
+            'iot-project.fertilizer1-mixer': None,
+            'iot-project.fertilizer2-mixer': None,
+            'iot-project.fertilizer3-mixer': None,
+            'iot-project.area-select': None,
+            'iot-project.pump-in': None,
+            'iot-project.pump-out': None
+        }
+
     def init_feed(self, feed_name):
         try:
             feed = self.aio.feeds(feed_name)
@@ -25,7 +35,12 @@ class WaterMonitoringTask:
 
     def update_feed(self, feed_name, value):
         if feed_name in self.feeds:
-            self.aio.send_data(self.feeds[feed_name], value)  # Use feed key to send data
+            if self.previous_states[feed_name] != value:
+                self.aio.send_data(self.feeds[feed_name], value)  # Use feed key to send data
+                self.previous_states[feed_name] = value  # Update the previous state
+                print(f"Updated {feed_name} with value {value}")
+            else:
+                print(f"No change in {feed_name}, not updating")
         else:
             print(f"Feed {feed_name} not found")
 
