@@ -8,8 +8,8 @@ area_selectors = [4, 5, 6]  # Representing 3 relays for 3 areas
 pump_in = 7
 pump_out = 8
 
-soil_temperature_command = [1, 3, 0, 6, 0, 1]
-soil_moisture_command = [1, 3, 0, 7, 0, 1]
+soil_temperature = [10, 3, 0, 6, 0, 1]
+soil_moisture = [10, 3, 0, 7, 0, 1]
 
 ser = None  # Global variable to hold the serial port instance
 
@@ -80,17 +80,15 @@ def read_sensor(ser, command):
         print("Failed to read sensor data")
     return response
 
-def read_soil_temperature(ser):
-    print("Reading soil temperature...")
-    return read_sensor(ser, soil_temperature_command)
+def readTemperature():
+    return read_sensor(ser, soil_temperature)
 
-def read_soil_moisture(ser):
-    print("Reading soil moisture...")
-    return read_sensor(ser, soil_moisture_command)
+def readMoisture():
+    return read_sensor(ser, soil_moisture)
 
 # Example usage for controlling actuators and reading sensors
 if __name__ == "__main__":
-    ser = initialize_modbus(port='/dev/ttyUSB0')
+    ser = initialize_modbus(port='/dev/ttyUSB0', baudrate=9600)
 
     if ser:
         # Example of controlling fertilizer mixers
@@ -116,12 +114,10 @@ if __name__ == "__main__":
         time.sleep(2)
         setDevice(ser, pump_out, False)  # Turn off pump out
 
-        # Reading sensor data
-        temperature = read_soil_temperature(ser)
-        print(f"Temperature: {temperature}")
-
-        moisture = read_soil_moisture(ser)
-        print(f"Moisture: {moisture}")
+        print("Moisture:", readMoisture())
+        time.sleep(1)
+        print("Temperature:", readTemperature())
+        time.sleep(1)
 
         ser.close()
     else:
