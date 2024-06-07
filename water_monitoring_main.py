@@ -8,10 +8,11 @@ from Scheduler.scheduler import Scheduler
 import Ultilities.modbus485 as modbus485
 from Ultilities.softwaretimer import softwaretimer
 import time
+import os
 
 # Adafruit IO credentials
-AIO_USERNAME = 'BasintonDinh'
-AIO_KEY = 'aio_lJNn76oEYsLN1H6KPjUp6m3HUKKk'
+AIO_USERNAME = os.getenv('AIO_USERNAME')
+AIO_KEY = os.getenv('AIO_KEY')
 
 # Initialize the serial port once
 modbus485.initialize_modbus()
