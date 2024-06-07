@@ -8,6 +8,9 @@ area_selectors = [4, 5, 6]  # Representing 3 relays for 3 areas
 pump_in = 7
 pump_out = 8
 
+soil_temperature_command = [1, 3, 0, 6, 0, 1]
+soil_moisture_command = [1, 3, 0, 7, 0, 1]
+
 ser = None  # Global variable to hold the serial port instance
 
 def initialize_modbus(port='/dev/ttyUSB0', baudrate=115200, timeout=1):
@@ -21,10 +24,10 @@ def initialize_modbus(port='/dev/ttyUSB0', baudrate=115200, timeout=1):
             ser = None
     return ser
 
-def serial_read_data():
-    bytesToRead = ser.inWaiting()
-    if bytesToRead > 0:
-        out = ser.read(bytesToRead)
+def serial_read_data(ser):
+    bytes_to_read = ser.inWaiting()
+    if bytes_to_read > 0:
+        out = ser.read(bytes_to_read)
         data_array = [b for b in out]
         print(f"Received data: {data_array}")
         if len(data_array) >= 7:
@@ -60,17 +63,17 @@ def generate_command(device_id, state):
 def setDevice(ser, device_id, state):
     command = generate_command(device_id, state)
     print(f"Sending command (Device {device_id}, {'ON' if state else 'OFF'}): {command}")
-    ser.write(command)
+    ser.write(bytearray(command))
     time.sleep(1)
-    response = serial_read_data()
+    response = serial_read_data(ser)
     print(f"Response: {response}")
 
 def read_sensor(ser, command):
     command_with_crc = add_crc16(command)
     print(f"Sending command to sensor: {command_with_crc}")
-    ser.write(command_with_crc)
+    ser.write(bytearray(command_with_crc))
     time.sleep(1)
-    response = serial_read_data()
+    response = serial_read_data(ser)
     if response >= 0:
         print(f"Sensor data: {response}")
     else:
@@ -78,14 +81,12 @@ def read_sensor(ser, command):
     return response
 
 def read_soil_temperature(ser):
-    soil_temperature = [10, 3, 0, 6, 0, 1]
     print("Reading soil temperature...")
-    return read_sensor(ser, soil_temperature)
+    return read_sensor(ser, soil_temperature_command)
 
 def read_soil_moisture(ser):
-    soil_moisture = [10, 3, 0, 7, 0, 1]
     print("Reading soil moisture...")
-    return read_sensor(ser, soil_moisture)
+    return read_sensor(ser, soil_moisture_command)
 
 # Example usage for controlling actuators and reading sensors
 if __name__ == "__main__":
