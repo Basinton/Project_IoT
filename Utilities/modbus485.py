@@ -1,5 +1,3 @@
-print("Sensors and Actuators")
-
 import time
 import serial
 import serial.tools.list_ports
@@ -10,31 +8,16 @@ area_selectors = [4, 5, 6]  # Representing 3 relays for 3 areas
 pump_in = 7
 pump_out = 8
 
-ser = None  # Global variable to hold the serial port instance
-
-def initialize_modbus(port='COM7', baudrate=115200, timeout=1):
-    global ser
-    if ser is None:
-        try:
-            ser = serial.Serial(port=port, baudrate=baudrate, timeout=timeout)
-            print(f"Port {port} opened successfully")
-        except serial.SerialException as e:
-            print(f"Failed to open port {port}: {e}")
-            ser = None
+def initialize_modbus(port='/dev/ttyUSB0', baudrate=115200, timeout=1):
+    try:
+        ser = serial.Serial(port=port, baudrate=baudrate, timeout=timeout)
+        print(f"Port {port} opened successfully")
+    except serial.SerialException as e:
+        print(f"Failed to open port {port}: {e}")
+        ser = None
     return ser
 
-def getPort():
-    ports = serial.tools.list_ports.comports()
-    for port in ports:
-        print(f"Found port: {port.device}")
-    return "COM7"  # Use the created virtual port
-
-portName = getPort()
-print(f"Using port: {portName}")
-
-initialize_modbus(port=portName)
-
-def serial_read_data():
+def serial_read_data(ser):
     bytesToRead = ser.inWaiting()
     if bytesToRead > 0:
         out = ser.read(bytesToRead)
@@ -70,37 +53,42 @@ def generate_command(device_id, state):
     command = [device_id, 6, 0, 0, 0, 255 if state else 0]
     return add_crc16(command)
 
-def setDevice(device_id, state):
+def setDevice(ser, device_id, state):
     command = generate_command(device_id, state)
     print(f"Sending command (Device {device_id}, {'ON' if state else 'OFF'}): {command}")
     ser.write(bytearray(command))
     time.sleep(1)
-    response = serial_read_data()
+    response = serial_read_data(ser)
     print(f"Response: {response}")
 
 # Example usage for controlling actuators
-if ser:
-    # Example of controlling fertilizer mixers
-    for mixer_id in fertilizer_mixers:
-        setDevice(mixer_id, True)  # Turn on
-        time.sleep(2)
-        setDevice(mixer_id, False)  # Turn off
-        time.sleep(2)
+if __name__ == "__main__":
+    ser = initialize_modbus(port='/dev/ttyUSB0')
 
-# Example of controlling area selectors
-    for selector_id in area_selectors:
-        setDevice(selector_id, True)  # Activate area
-        time.sleep(2)
-        setDevice(selector_id, False)  # Deactivate area
-        time.sleep(2)
+    if ser:
+        # Example of controlling fertilizer mixers
+        for mixer_id in fertilizer_mixers:
+            setDevice(ser, mixer_id, True)  # Turn on
+            time.sleep(2)
+            setDevice(ser, mixer_id, False)  # Turn off
+            time.sleep(2)
 
-# Example of controlling pumps
-    setDevice(pump_in, True)  # Turn on pump in
-    time.sleep(2)
-    setDevice(pump_in, False)  # Turn off pump in
-    time.sleep(2)
-    setDevice(pump_out, True)  # Turn on pump out
-    time.sleep(2)
-    setDevice(pump_out, False)  # Turn off pump out
-else:
-    print("Serial port is not available. Cannot proceed with setting devices.")
+        # Example of controlling area selectors
+        for selector_id in area_selectors:
+            setDevice(ser, selector_id, True)  # Activate area
+            time.sleep(2)
+            setDevice(ser, selector_id, False)  # Deactivate area
+            time.sleep(2)
+
+        # Example of controlling pumps
+        setDevice(ser, pump_in, True)  # Turn on pump in
+        time.sleep(2)
+        setDevice(ser, pump_in, False)  # Turn off pump in
+        time.sleep(2)
+        setDevice(ser, pump_out, True)  # Turn on pump out
+        time.sleep(2)
+        setDevice(ser, pump_out, False)  # Turn off pump out
+
+        ser.close()
+    else:
+        print("Serial port is not available. Cannot proceed with setting devices.")
