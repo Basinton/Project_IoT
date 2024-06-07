@@ -8,8 +8,8 @@ area_selectors = [4, 5, 6]  # Representing 3 relays for 3 areas
 pump_in = 7
 pump_out = 8
 
-soil_temperature = [1, 3, 0, 6, 0, 1]
-soil_moisture = [1, 3, 0, 7, 0, 1]
+soil_temperature = [10, 3, 0, 6, 0, 1]
+soil_moisture = [10, 3, 0, 7, 0, 1]
 
 ser = None  # Global variable to hold the serial port instance
 

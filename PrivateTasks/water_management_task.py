@@ -1,3 +1,4 @@
+import Ultilities.modbus485 as modbus485
 from Ultilities.softwaretimer import softwaretimer
 
 class WaterManagementTask:
@@ -6,14 +7,14 @@ class WaterManagementTask:
         self.notification_func = notification_func
         self.state = 'IDLE'
         self.current_mixer = 0
-        self.mixer_ids = [1, 2, 3]
-        self.area_selector_ids = [4, 5, 6]  # Representing 3 relays for 3 areas
-        self.pump_in_relay_id = 7
-        self.pump_out_relay_id = 8
+        self.mixer_ids = modbus485.fertilizer_mixers
+        self.area_selector_ids = modbus485.area_selectors
+        self.pump_in_relay_id = modbus485.pump_in
+        self.pump_out_relay_id = modbus485.pump_out
         self.timer = softwaretimer()
 
     def activate_relay(self, relay_id, state):
-        self.modbus.setDevice(relay_id, state)
+        self.modbus.setDevice(self.modbus.ser, relay_id, state)
 
     def run(self):
         if self.state == 'IDLE':
