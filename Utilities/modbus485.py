@@ -7,11 +7,11 @@ soil_moisture = [10, 3, 0, 7, 0, 1, 53, 203]
 
 ser = None  # Global variable to hold the serial port instance
 
-def initialize_modbus(port='/dev/ttyUSB0', baudrate=9600, timeout=1):
+def initialize_modbus(port='/dev/ttyUSB0', baudrate=9600):
     global ser
     if ser is None:
         try:
-            ser = serial.Serial(port=port, baudrate=baudrate, timeout=timeout)
+            ser = serial.Serial(port=port, baudrate=baudrate)
             print(f"Port {port} opened successfully")
         except serial.SerialException as e:
             print(f"Failed to open port {port}: {e}")
@@ -34,13 +34,13 @@ def serial_read_data(ser):
 
 def readTemperature():
     serial_read_data(ser)
-    ser.write(bytearray(soil_temperature))
+    ser.write(soil_temperature)
     time.sleep(1)
     return serial_read_data(ser)
 
 def readMoisture():
     serial_read_data(ser)
-    ser.write(bytearray(soil_moisture))
+    ser.write(soil_moisture)
     time.sleep(1)
     return serial_read_data(ser)
 
