@@ -81,10 +81,10 @@ def read_sensor(ser, command):
     return response
 
 def readTemperature():
-    return read_sensor(ser, soil_temperature)
+    return read_sensor(ser, soil_temperature) / 100
 
 def readMoisture():
-    return read_sensor(ser, soil_moisture)
+    return read_sensor(ser, soil_moisture) / 100
 
 # Example usage for controlling actuators and reading sensors
 if __name__ == "__main__":
