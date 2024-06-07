@@ -4,7 +4,7 @@ import serial.tools.list_ports
 
 # IDs for different types of actuators
 fertilizer_mixers = [1, 2, 3]
-area_selectors = [4, 5, 6]  # Representing 3 relays for 3 areas
+area_selectors = [4, 5, 6]
 pump_in = 7
 pump_out = 8
 
