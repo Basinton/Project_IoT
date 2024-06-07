@@ -5,9 +5,8 @@ import PrivateTasks.rapido_server_task
 import PrivateTasks.water_management_task
 
 from Scheduler.scheduler import Scheduler
-
-import Utilities.modbus485 as modbus485
-from Utilities.softwaretimer import *
+import Ultilities.modbus485 as modbus485
+from Ultilities.softwaretimer import softwaretimer
 import time
 
 # Adafruit IO credentials
@@ -22,24 +21,22 @@ if modbus485.ser:
 
     scheduler = Scheduler()
     scheduler.SCH_Init()
-    soft_timer = softwaretimer()
 
     ledblink_task = PrivateTasks.led_blinky_task.LedBlinkyTask()
     watermonitoring = PrivateTasks.water_monitoring_task.WaterMonitoringTask(watermonitoring_timer, modbus485, AIO_USERNAME, AIO_KEY)
     main_ui = PrivateTasks.main_ui_task.Main_UI(watermonitoring)
     rapidoserver = PrivateTasks.rapido_server_task.RapidoServerTask()
-    water_management = PrivateTasks.water_management_task.WaterManagementTask(modbus485, lambda msg: print(f"Notification: {msg}"))
+    watermanagement = PrivateTasks.water_management_task.WaterManagementTask(modbus485, main_ui.notification_func)
 
-    scheduler.SCH_Add_Task(soft_timer.Timer_Run, 0, 1000)  # Run every second
-    scheduler.SCH_Add_Task(ledblink_task.blink, 0, 1000)  # Blink every second
-    scheduler.SCH_Add_Task(main_ui.UI_Refresh, 0, 100)    # Refresh UI every 100 ms
-    scheduler.SCH_Add_Task(watermonitoring_timer.Timer_Run, 0, 100)  # Run timer every 100 ms
-    scheduler.SCH_Add_Task(watermonitoring.WaterMonitoringTask_Run, 0, 1000)  # Run every second
-    scheduler.SCH_Add_Task(water_management.run, 0, 1000)  # Run every second
+    scheduler.SCH_Add_Task(ledblink_task.run, 0, 1000)
+    scheduler.SCH_Add_Task(watermonitoring.run, 0, 1000)
+    scheduler.SCH_Add_Task(main_ui.run, 0, 5000)
+    scheduler.SCH_Add_Task(rapidoserver.run, 0, 5000)
+    scheduler.SCH_Add_Task(watermanagement.run, 0, 10000)
 
     while True:
         scheduler.SCH_Update()
         scheduler.SCH_Dispatch_Tasks()
         time.sleep(0.1)
 else:
-    print("Serial port is not available. Cannot proceed with setting devices.")
+    print("Serial port is not available. Cannot proceed with monitoring.")

@@ -8,8 +8,8 @@ area_selectors = [4, 5, 6]  # Representing 3 relays for 3 areas
 pump_in = 7
 pump_out = 8
 
-soil_temperature = [10, 3, 0, 6, 0, 1]
-soil_moisture = [10, 3, 0, 7, 0, 1]
+soil_temperature = [1, 3, 0, 6, 0, 1]
+soil_moisture = [1, 3, 0, 7, 0, 1]
 
 ser = None  # Global variable to hold the serial port instance
 
@@ -81,10 +81,10 @@ def read_sensor(ser, command):
     return response
 
 def readTemperature():
-    return read_sensor(ser, soil_temperature) / 100
+    return read_sensor(ser, soil_temperature)
 
 def readMoisture():
-    return read_sensor(ser, soil_moisture) / 100
+    return read_sensor(ser, soil_moisture)
 
 # Example usage for controlling actuators and reading sensors
 if __name__ == "__main__":
@@ -114,10 +114,13 @@ if __name__ == "__main__":
         time.sleep(2)
         setDevice(ser, pump_out, False)  # Turn off pump out
 
-        print("Moisture:", readMoisture())
-        time.sleep(1)
-        print("Temperature:", readTemperature())
-        time.sleep(1)
+        # Reading sensor data in a loop
+        while True:
+            print("TEST SENSOR")
+            print("Moisture:", readMoisture())
+            time.sleep(1)
+            print("Temperature:", readTemperature())
+            time.sleep(1)
 
         ser.close()
     else:
