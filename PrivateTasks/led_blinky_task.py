@@ -1,30 +1,20 @@
-import platform
+import RPi.GPIO as GPIO
 import time
 
-if platform.system() == 'Linux':
-    from gpiozero import LED
-else:
-    class MockLED:
-        def __init__(self, pin):
-            self.pin = pin
-            self.state = False
-
-        def on(self):
-            self.state = True
-            print(f"Mock LED on pin {self.pin} is now ON")
-
-        def off(self):
-            self.state = False
-            print(f"Mock LED on pin {self.pin} is now OFF")
-
-    LED = MockLED
-
 class LedBlinkyTask:
-    def __init__(self, led_pin=17):
-        self.led = LED(led_pin)
+    def __init__(self, pin=17):
+        self.led_pin = pin
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(self.led_pin, GPIO.OUT)
+        self.led_state = False
 
-    def blink(self):
-        self.led.on()
-        time.sleep(0.5)
-        self.led.off()
-        time.sleep(0.5)
+    def toggle_led(self):
+        self.led_state = not self.led_state
+        GPIO.output(self.led_pin, self.led_state)
+        print(f"LED on pin {self.led_pin} is now {'ON' if self.led_state else 'OFF'}")
+
+    def run(self):
+        self.toggle_led()
+
+    def cleanup(self):
+        GPIO.cleanup()

@@ -1,3 +1,4 @@
+import time
 import PrivateTasks.main_ui_task
 import PrivateTasks.led_blinky_task
 import PrivateTasks.water_monitoring_task
@@ -33,9 +34,14 @@ if modbus485.ser:
     scheduler.SCH_Add_Task(rapidoserver.run, 0, 5000)
     scheduler.SCH_Add_Task(watermanagement.run, 0, 10000)
 
-    while True:
-        scheduler.SCH_Update()
-        scheduler.SCH_Dispatch_Tasks()
-        time.sleep(0.1)
+    print("Starting scheduler loop")
+    try:
+        while True:
+            scheduler.SCH_Update()
+            scheduler.SCH_Dispatch_Tasks()
+            time.sleep(0.1)
+    except KeyboardInterrupt:
+        print("Cleaning up GPIO")
+        ledblink_task.cleanup()
 else:
     print("Serial port is not available. Cannot proceed with monitoring.")

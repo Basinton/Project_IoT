@@ -65,7 +65,7 @@ class WaterMonitoringTask:
         # Placeholder function to simulate reading pump state
         return 'ON' if pump_type == 'in' else 'OFF'  # Replace with actual reading
 
-    def WaterMonitoringTask_Run(self):
+    def run(self):
         self.monitor_fertilizer_mixers()
         self.monitor_area_select()
         self.monitor_pumps()
