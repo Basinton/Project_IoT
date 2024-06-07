@@ -1,4 +1,3 @@
-import Ultilities.modbus485 as modbus485
 from Ultilities.softwaretimer import softwaretimer
 
 class WaterManagementTask:

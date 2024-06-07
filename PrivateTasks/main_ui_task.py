@@ -1,7 +1,8 @@
 class Main_UI:
-    def __init__(self, water_monitoring):
-        self.water_monitoring = water_monitoring
+    def __init__(self, watermonitoring):
+        self.watermonitoring = watermonitoring
+        # Add more initializations if necessary
 
-    def UI_Refresh(self):
-        # Implementation of UI_Refresh
-        print("UI is refreshed")
+    def notification_func(self, message):
+        print(f"Notification: {message}")
+        # Add more code to handle the notification

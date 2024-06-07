@@ -1,5 +1,3 @@
-import os
-import time
 import PrivateTasks.main_ui_task
 import PrivateTasks.led_blinky_task
 import PrivateTasks.water_monitoring_task
@@ -10,8 +8,8 @@ from Scheduler.scheduler import Scheduler
 import Ultilities.modbus485 as modbus485
 from Ultilities.softwaretimer import softwaretimer
 
-# Adafruit IO credentials
-AIO_USERNAME = 'Basintondinh'
+# Adafruit IO credentials (hardcoded)
+AIO_USERNAME = 'BasintonDinh'
 AIO_KEY = 'abc'
 
 # Initialize the serial port once
