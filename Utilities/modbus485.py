@@ -4,20 +4,24 @@ import serial.tools.list_ports
 
 # IDs for different types of actuators
 fertilizer_mixers = [1, 2, 3]
-area_selectors = [4, 5, 6]
+area_selectors = [4, 5, 6]  # Representing 3 relays for 3 areas
 pump_in = 7
 pump_out = 8
 
+ser = None  # Global variable to hold the serial port instance
+
 def initialize_modbus(port='/dev/ttyUSB0', baudrate=115200, timeout=1):
-    try:
-        ser = serial.Serial(port=port, baudrate=baudrate, timeout=timeout)
-        print(f"Port {port} opened successfully")
-    except serial.SerialException as e:
-        print(f"Failed to open port {port}: {e}")
-        ser = None
+    global ser
+    if ser is None:
+        try:
+            ser = serial.Serial(port=port, baudrate=baudrate, timeout=timeout)
+            print(f"Port {port} opened successfully")
+        except serial.SerialException as e:
+            print(f"Failed to open port {port}: {e}")
+            ser = None
     return ser
 
-def serial_read_data(ser):
+def serial_read_data():
     bytesToRead = ser.inWaiting()
     if bytesToRead > 0:
         out = ser.read(bytesToRead)
@@ -58,10 +62,31 @@ def setDevice(ser, device_id, state):
     print(f"Sending command (Device {device_id}, {'ON' if state else 'OFF'}): {command}")
     ser.write(bytearray(command))
     time.sleep(1)
-    response = serial_read_data(ser)
+    response = serial_read_data()
     print(f"Response: {response}")
 
-# Example usage for controlling actuators
+def read_sensor(ser, command):
+    command_with_crc = add_crc16(command)
+    ser.write(bytearray(command_with_crc))
+    time.sleep(1)
+    response = serial_read_data()
+    if response >= 0:
+        print(f"Sensor data: {response}")
+    else:
+        print("Failed to read sensor data")
+    return response
+
+def read_soil_temperature(ser):
+    soil_temperature = [10, 3, 0, 6, 0, 1]
+    print("Reading soil temperature...")
+    return read_sensor(ser, soil_temperature)
+
+def read_soil_moisture(ser):
+    soil_moisture = [10, 3, 0, 7, 0, 1]
+    print("Reading soil moisture...")
+    return read_sensor(ser, soil_moisture)
+
+# Example usage for controlling actuators and reading sensors
 if __name__ == "__main__":
     ser = initialize_modbus(port='/dev/ttyUSB0')
 
@@ -88,6 +113,13 @@ if __name__ == "__main__":
         setDevice(ser, pump_out, True)  # Turn on pump out
         time.sleep(2)
         setDevice(ser, pump_out, False)  # Turn off pump out
+
+        # Reading sensor data
+        temperature = read_soil_temperature(ser)
+        print(f"Temperature: {temperature}")
+
+        moisture = read_soil_moisture(ser)
+        print(f"Moisture: {moisture}")
 
         ser.close()
     else:
