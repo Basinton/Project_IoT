@@ -67,6 +67,8 @@ def setDevice(ser, device_id, state):
 
 def read_sensor(ser, command):
     command_with_crc = add_crc16(command)
+    command_hex = ' '.join(f'{byte:02X}' for byte in command_with_crc)
+    print(f"Sending command to sensor: {command_hex}")
     ser.write(bytearray(command_with_crc))
     time.sleep(1)
     response = serial_read_data()
