@@ -60,7 +60,7 @@ def generate_command(device_id, state):
 def setDevice(ser, device_id, state):
     command = generate_command(device_id, state)
     print(f"Sending command (Device {device_id}, {'ON' if state else 'OFF'}): {command}")
-    ser.write(bytearray(command))
+    ser.write(command)
     time.sleep(1)
     response = serial_read_data()
     print(f"Response: {response}")
@@ -68,7 +68,7 @@ def setDevice(ser, device_id, state):
 def read_sensor(ser, command):
     command_with_crc = add_crc16(command)
     print(f"Sending command to sensor: {command_with_crc}")
-    ser.write(bytearray(command_with_crc))
+    ser.write(command_with_crc)
     time.sleep(1)
     response = serial_read_data()
     if response >= 0:
