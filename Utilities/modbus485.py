@@ -2,8 +2,8 @@ import time
 import serial
 import serial.tools.list_ports
 
-soil_temperature = [10, 3, 0, 6, 0, 1, 100, 11]
-soil_moisture = [10, 3, 0, 7, 0, 1, 53, 203]
+soil_temperature = [10, 3, 0, 6, 0, 1, 101, 112]
+soil_moisture = [10, 3, 0, 7, 0, 1, 52, 176]
 
 ser = None  # Global variable to hold the serial port instance
 
