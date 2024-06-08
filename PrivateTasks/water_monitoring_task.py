@@ -38,11 +38,6 @@ class WaterMonitoringTask:
             if self.previous_states[feed_name] != value:
                 self.aio.send_data(self.feeds[feed_name], value)  # Use feed key to send data
                 self.previous_states[feed_name] = value  # Update the previous state
-                print(f"Updated {feed_name} with value {value}")
-            else:
-                print(f"No change in {feed_name}, not updating")
-        else:
-            print(f"Feed {feed_name} not found")
 
     def monitor_fertilizer_mixers(self):
         # Example function to read and update fertilizer mixers
