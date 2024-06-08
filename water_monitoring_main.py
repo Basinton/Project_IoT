@@ -8,12 +8,17 @@ import PrivateTasks.water_management_task
 from Scheduler.scheduler import Scheduler
 import Ultilities.modbus485 as modbus485
 from Ultilities.softwaretimer import softwaretimer
+import threading
+from App.app import app
 
 AIO_USERNAME = 'BasintonDinh'
 AIO_KEY = 'abc'
 
 # Initialize the serial port once
 modbus485.initialize_modbus()
+
+# Tạo instance của WaterManagementTask
+watermanagement = None
 
 if modbus485.ser:
     watermonitoring_timer = softwaretimer()
@@ -35,6 +40,9 @@ if modbus485.ser:
 
     print("Starting scheduler loop")
     try:
+        # Chạy Flask trong một luồng riêng biệt
+        threading.Thread(target=app.run, kwargs={'host': '0.0.0.0', 'port': 5000}).start()
+        
         while True:
             scheduler.SCH_Update()
             scheduler.SCH_Dispatch_Tasks()

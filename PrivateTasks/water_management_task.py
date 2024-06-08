@@ -7,20 +7,23 @@ class WaterManagementTask:
         self.notification_func = notification_func
         self.state = 'IDLE'
         self.current_mixer = 0
-        self.mixer_ids = modbus485.fertilizer_mixers
-        self.area_selector_ids = modbus485.area_selectors
-        self.pump_in_relay_id = modbus485.pump_in
-        self.pump_out_relay_id = modbus485.pump_out
+        self.mixer_ids = modbus.fertilizer_mixers
+        self.area_selector_ids = modbus.area_selectors
+        self.pump_in_relay_id = modbus.pump_in
+        self.pump_out_relay_id = modbus.pump_out
         self.timer = softwaretimer()
+        self.schedules = []
+        self.current_schedule = None
 
     def activate_relay(self, relay_id, state):
         self.modbus.setDevice(self.modbus.ser, relay_id, state)
 
     def run(self):
-        if self.state == 'IDLE':
+        if self.state == 'IDLE' and self.schedules:
             self.state = 'SELECTING_AREA'
             self.timer.start(10000)  # 10 seconds
             self.current_area_selector = 0
+            self.current_schedule = self.schedules.pop(0)
             self.activate_relay(self.area_selector_ids[self.current_area_selector], True)
             print(f"Started selecting area with selector {self.area_selector_ids[self.current_area_selector]}")
 
@@ -29,6 +32,7 @@ class WaterManagementTask:
                 self.activate_relay(self.area_selector_ids[self.current_area_selector], False)
                 print(f"Stopped selecting area with selector {self.area_selector_ids[self.current_area_selector]}")
                 self.state = 'MIXING'
+                self.current_mixer = 0
                 self.timer.start(10000)  # 10 seconds
                 self.activate_relay(self.mixer_ids[self.current_mixer], True)
                 print(f"Started mixing with mixer {self.mixer_ids[self.current_mixer]}")
@@ -37,11 +41,16 @@ class WaterManagementTask:
             if self.timer.is_expired():
                 self.activate_relay(self.mixer_ids[self.current_mixer], False)
                 print(f"Stopped mixing with mixer {self.mixer_ids[self.current_mixer]}")
-                self.current_mixer = (self.current_mixer + 1) % len(self.mixer_ids)
-                self.state = 'PUMP_IN'
-                self.timer.start(20000)  # 20 seconds
-                self.activate_relay(self.pump_in_relay_id, True)
-                print(f"Started pump-in with relay {self.pump_in_relay_id}")
+                self.current_mixer += 1
+                if self.current_mixer < len(self.mixer_ids):
+                    self.timer.start(10000)  # 10 seconds
+                    self.activate_relay(self.mixer_ids[self.current_mixer], True)
+                    print(f"Started mixing with mixer {self.mixer_ids[self.current_mixer]}")
+                else:
+                    self.state = 'PUMP_IN'
+                    self.timer.start(20000)  # 20 seconds
+                    self.activate_relay(self.pump_in_relay_id, True)
+                    print(f"Started pump-in with relay {self.pump_in_relay_id}")
 
         elif self.state == 'PUMP_IN':
             if self.timer.is_expired():
@@ -57,4 +66,11 @@ class WaterManagementTask:
                 self.activate_relay(self.pump_out_relay_id, False)
                 print(f"Stopped pump-out with relay {self.pump_out_relay_id}")
                 self.state = 'IDLE'
+                self.current_schedule = None
                 self.notification_func("Cycle complete")
+
+def add_schedule_to_system(schedule):
+    # Tạo instance của WaterManagementTask và thêm lịch tưới
+    global watermanagement
+    watermanagement.schedules.append(schedule)
+    print(f"Schedule added to system: {schedule}")
