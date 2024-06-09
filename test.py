@@ -1,4 +1,19 @@
 import socket
+import requests
+
+# Function to get the public IP address
+def get_public_ip():
+    try:
+        response = requests.get('https://api.ipify.org?format=text')
+        public_ip = response.text
+    except requests.RequestException as e:
+        public_ip = "Unable to get public IP"
+        print(f"Error: {e}")
+    return public_ip
+
+# Get the public IP address
+public_ip = get_public_ip()
+print(f"Public IP Address: {public_ip}")
 
 # Define the server address and port
 HOST = '0.0.0.0'  # Listen on all network interfaces
