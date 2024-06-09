@@ -9,5 +9,5 @@ def connect_to_server(server_ip, port=12345):
         print(f"Received data: {data.decode()}")
 
 if __name__ == "__main__":
-    server_ip = '125.235.238.108'  # Replace with the IP address of your computer
+    server_ip = '255.255.240.0'  # Replace with the IP address of your computer
     connect_to_server(server_ip)
