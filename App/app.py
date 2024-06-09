@@ -12,8 +12,6 @@ def calculate_watering_time(water_ml):
 @app.route('/set_schedule', methods=['POST'])
 def set_schedule():
     data = request.json
-    print(f"Received data: {data}")
-    
     name = data.get('name')
     area = data.get('area')
     fertilizer1 = data.get('fertilizer1')
@@ -34,9 +32,10 @@ def set_schedule():
     }
     
     schedules.append(schedule)
-    print(f"Schedule added: {schedule}")
+    
+    print(f"Received schedule: {schedule}")
     
     return jsonify({"status": "success", "schedule": schedule})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000)
