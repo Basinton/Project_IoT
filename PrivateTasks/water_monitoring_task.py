@@ -38,19 +38,13 @@ class WaterMonitoringTask:
     def read_humidity(self):
         return modbus485.readMoisture()
 
-    def read_water_amount(self):
-        # Placeholder function to simulate reading water amount
-        return 1000  # Replace with actual reading in ml
-
     def monitor_sensors(self):
         temperature = self.read_temperature()
         humidity = self.read_humidity()
-        water_amount = self.read_water_amount()
 
         sensor_data = {
             'temperature': temperature,
-            'humidity': humidity,
-            'water_amount': water_amount
+            'humidity': humidity
         }
 
         self.update_feed('sensor-data', sensor_data)
