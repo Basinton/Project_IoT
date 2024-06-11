@@ -54,35 +54,6 @@ class WaterManagementTask:
     def activate_relay(self, relay_id, state):
         self.modbus.setDevice(self.modbus.ser, relay_id, state)
 
-    def calculate_time(self, ml):
-        return ml * 0.01 * 1000  # Convert to milliseconds
-
-    def check_new_data(self):
-        url = f"https://io.adafruit.com/api/v2/{self.aio_username}/feeds/{self.aio_schedule_feed}/data"
-        headers = {
-            'X-AIO-Key': self.aio_key
-        }
-        response = requests.get(url, headers=headers)
-        if response.status_code == 200:
-            feed_data = response.json()
-            if feed_data:
-                latest_entry = feed_data[0]
-                created_at = datetime.fromisoformat(latest_entry['created_at'].replace('Z', '+00:00'))
-                if created_at > self.last_fetched_time:
-                    return latest_entry
-        return None
-
-    def fetch_schedules(self):
-        latest_entry = self.check_new_data()
-        if latest_entry:
-            schedule = json.loads(latest_entry['value'])
-            if schedule['name'] != self.last_completed_schedule_name:
-                self.schedules.append(schedule)
-                self.last_fetched_time = datetime.fromisoformat(latest_entry['created_at'].replace('Z', '+00:00'))
-                print("Fetched new schedules from Adafruit IO")
-        else:
-            print("No new data on Adafruit IO")
-
     def calculate_total_time(self, schedule):
         fertilizer1_time = int(schedule['fertilizer1']) * 0.01 * 1.05
         fertilizer2_time = int(schedule['fertilizer2']) * 0.01 * 1.05
@@ -93,13 +64,12 @@ class WaterManagementTask:
         area_selection_time = 1 * 1.05  # Time to select area in seconds
 
         total_time = (fertilizer1_time + fertilizer2_time + fertilizer3_time +
-                    mixing_time + pump_in_time + pump_out_time + area_selection_time)
+                      mixing_time + pump_in_time + pump_out_time + area_selection_time)
 
         buffer_time = total_time * 0.15
         total_time_with_buffer = total_time + buffer_time
 
         return total_time_with_buffer
-
 
     def run(self):
         if self.state == self.IDLE:
@@ -110,6 +80,15 @@ class WaterManagementTask:
 
                 # Tính tổng thời gian dự tính hoàn thành
                 total_time = self.calculate_total_time(self.current_schedule)
+
+                # Tính thời gian cho từng giai đoạn
+                self.fertilizer1_time = int(self.current_schedule['fertilizer1']) * 0.01 * 1.05
+                self.fertilizer2_time = int(self.current_schedule['fertilizer2']) * 0.01 * 1.05
+                self.fertilizer3_time = int(self.current_schedule['fertilizer3']) * 0.01 * 1.05
+                self.mixing_time = 10  # Mixing time in seconds
+                self.pump_in_time = int(self.current_schedule['waterAmount']) * 0.01 * 1.05
+                self.pump_out_time = self.pump_in_time
+                self.area_selection_time = 1 * 1.05  # Time to select area in seconds
 
                 # Gửi xác nhận lịch tưới
                 confirmation_data = {
@@ -125,39 +104,37 @@ class WaterManagementTask:
 
                 self.state = self.FERTILIZING
                 self.current_mixer = 0
-                fertilizer_ml = int(self.current_schedule[f'fertilizer{self.current_mixer + 1}'])
-                self.timer.start(self.calculate_time(fertilizer_ml))
+                self.timer.start(self.fertilizer1_time)
                 self.activate_relay(self.mixer_ids[self.current_mixer], True)
-                print(f"Started fertilizing with mixer {self.mixer_ids[self.current_mixer]} for {fertilizer_ml} ml")
+                print(f"Started fertilizing with mixer {self.mixer_ids[self.current_mixer]} for {self.fertilizer1_time / 1000} seconds")
 
         elif self.state == self.FERTILIZING:
             if self.timer.is_expired():
                 self.activate_relay(self.mixer_ids[self.current_mixer], False)
                 self.current_mixer += 1
                 if self.current_mixer < len(self.mixer_ids):
-                    fertilizer_ml = int(self.current_schedule[f'fertilizer{self.current_mixer + 1}'])
-                    self.timer.start(self.calculate_time(fertilizer_ml))
+                    fertilizer_time = getattr(self, f'fertilizer{self.current_mixer + 1}_time')
+                    self.timer.start(fertilizer_time)
                     self.activate_relay(self.mixer_ids[self.current_mixer], True)
-                    print(f"Started fertilizing with mixer {self.mixer_ids[self.current_mixer]} for {fertilizer_ml} ml")
+                    print(f"Started fertilizing with mixer {self.mixer_ids[self.current_mixer]} for {fertilizer_time / 1000} seconds")
                 else:
                     self.state = self.MIXING
-                    self.timer.start(10000)
+                    self.timer.start(self.mixing_time * 1000)  # Convert to milliseconds
                     print("Started mixing for 10 seconds")
 
         elif self.state == self.MIXING:
             if self.timer.is_expired():
                 self.state = self.PUMP_IN
-                water_ml = int(self.current_schedule['waterAmount'])
-                self.timer.start(self.calculate_time(water_ml))
+                self.timer.start(self.pump_in_time)
                 self.activate_relay(self.pump_in_relay_id, True)
-                print(f"Started pump-in with relay {self.pump_in_relay_id} for {water_ml} ml")
+                print(f"Started pump-in with relay {self.pump_in_relay_id} for {self.pump_in_time / 1000} seconds")
 
         elif self.state == self.PUMP_IN:
             if self.timer.is_expired():
                 self.activate_relay(self.pump_in_relay_id, False)
                 self.state = self.SELECTING_AREA
                 area = int(self.current_schedule['area']) - 1
-                self.timer.start(1000)
+                self.timer.start(self.area_selection_time * 1000)  # Convert to milliseconds
                 self.activate_relay(self.area_selector_ids[area], True)
                 print(f"Started selecting area {area + 1}")
 
@@ -166,10 +143,9 @@ class WaterManagementTask:
                 area = int(self.current_schedule['area']) - 1
                 self.activate_relay(self.area_selector_ids[area], False)
                 self.state = self.PUMP_OUT
-                water_ml = int(self.current_schedule['waterAmount'])
-                self.timer.start(self.calculate_time(water_ml))
+                self.timer.start(self.pump_out_time)
                 self.activate_relay(self.pump_out_relay_id, True)
-                print(f"Started pump-out with relay {self.pump_out_relay_id} for {water_ml} ml")
+                print(f"Started pump-out with relay {self.pump_out_relay_id} for {self.pump_out_time / 1000} seconds")
 
         elif self.state == self.PUMP_OUT:
             if self.timer.is_expired():
