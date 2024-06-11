@@ -1,6 +1,7 @@
 import time
 import serial
 import serial.tools.list_ports
+from Ultilities.softwaretimer import softwaretimer
 
 # IDs for different types of actuators
 fertilizer_mixers = [1, 2, 3]
@@ -12,6 +13,7 @@ soil_temperature = [10, 3, 0, 6, 0, 1]
 soil_moisture = [10, 3, 0, 7, 0, 1]
 
 ser = None  # Global variable to hold the serial port instance
+timer = softwaretimer()
 
 def initialize_modbus(port='/dev/ttyUSB0', baudrate=9600, timeout=1):
     global ser
@@ -64,7 +66,9 @@ def setDevice(ser, device_id, state):
     command = generate_command(device_id, state)
     print(f"Sending command (Device {device_id}, {'ON' if state else 'OFF'}): {command}")
     ser.write(command)
-    time.sleep(0.05)  # Change delay to 0.05 seconds
+    timer.start(50)  # Set timer for 50 milliseconds
+    while not timer.is_expired():
+        pass
     response = serial_read_data(ser)
     print(f"Response: {response}")
 
@@ -72,7 +76,9 @@ def read_sensor(ser, command):
     command_with_crc = add_crc16(command)
     print(f"Sending command to sensor: {command_with_crc}")
     ser.write(command_with_crc)
-    time.sleep(0.05)  # Change delay to 0.05 seconds
+    timer.start(50)  # Set timer for 50 milliseconds
+    while not timer.is_expired():
+        pass
     response = serial_read_data(ser)
     if response >= 0:
         print(f"Sensor data: {response}")
@@ -94,33 +100,51 @@ if __name__ == "__main__":
         # Example of controlling fertilizer mixers
         for mixer_id in fertilizer_mixers:
             setDevice(ser, mixer_id, True)  # Turn on
-            time.sleep(2)
+            timer.start(2000)  # Set timer for 2 seconds
+            while not timer.is_expired():
+                pass
             setDevice(ser, mixer_id, False)  # Turn off
-            time.sleep(2)
+            timer.start(2000)  # Set timer for 2 seconds
+            while not timer.is_expired():
+                pass
 
         # Example of controlling area selectors
         for selector_id in area_selectors:
             setDevice(ser, selector_id, True)  # Activate area
-            time.sleep(2)
+            timer.start(2000)  # Set timer for 2 seconds
+            while not timer.is_expired():
+                pass
             setDevice(ser, selector_id, False)  # Deactivate area
-            time.sleep(2)
+            timer.start(2000)  # Set timer for 2 seconds
+            while not timer.is_expired():
+                pass
 
         # Example of controlling pumps
         setDevice(ser, pump_in, True)  # Turn on pump in
-        time.sleep(2)
+        timer.start(2000)  # Set timer for 2 seconds
+        while not timer.is_expired():
+            pass
         setDevice(ser, pump_in, False)  # Turn off pump in
-        time.sleep(2)
+        timer.start(2000)  # Set timer for 2 seconds
+        while not timer.is_expired():
+            pass
         setDevice(ser, pump_out, True)  # Turn on pump out
-        time.sleep(2)
+        timer.start(2000)  # Set timer for 2 seconds
+        while not timer.is_expired():
+            pass
         setDevice(ser, pump_out, False)  # Turn off pump out
 
         # Reading sensor data in a loop
         while True:
             print("TEST SENSOR")
             print("Moisture:", readMoisture())
-            time.sleep(1)
+            timer.start(1000)  # Set timer for 1 second
+            while not timer.is_expired():
+                pass
             print("Temperature:", readTemperature())
-            time.sleep(1)
+            timer.start(1000)  # Set timer for 1 second
+            while not timer.is_expired():
+                pass
 
         ser.close()
     else:
