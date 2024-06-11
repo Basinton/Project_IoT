@@ -83,9 +83,9 @@ class WaterManagementTask:
             feed_data = response.json()
             if feed_data:
                 latest_entry = feed_data[0]
-                created_at = datetime.fromisoformat(latest_entry['created_at'].replace('Z', '+00:00'))
-                if created_at > self.last_fetched_time and created_at > datetime.now(timezone.utc):
-                    return latest_entry
+                # created_at = datetime.fromisoformat(latest_entry['created_at'].replace('Z', '+00:00'))
+                # if created_at > self.last_fetched_time and created_at > datetime.now(timezone.utc):
+                return latest_entry
         return None
 
     def fetch_schedules(self):
