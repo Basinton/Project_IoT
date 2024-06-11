@@ -76,18 +76,41 @@ class WaterManagementTask:
         else:
             print("Failed to fetch schedules from Adafruit IO")
 
+    def calculate_total_time(self, schedule):
+        fertilizer1_time = int(schedule['fertilizer1']) * 0.01
+        fertilizer2_time = int(schedule['fertilizer2']) * 0.01
+        fertilizer3_time = int(schedule['fertilizer3']) * 0.01
+        mixing_time = 10  # Mixing time in seconds
+        pump_in_time = int(schedule['waterAmount']) * 0.01
+        pump_out_time = pump_in_time
+        area_selection_time = 1  # Time to select area in seconds
+
+        total_time = (fertilizer1_time + fertilizer2_time + fertilizer3_time +
+                      mixing_time + pump_in_time + pump_out_time + area_selection_time)
+
+        return total_time
+
     def run(self):
         if self.state == self.IDLE:
             if not self.schedules:
                 self.fetch_schedules()
             if self.schedules:
                 self.current_schedule = self.schedules.pop(0)
+
+                # Tính tổng thời gian dự tính hoàn thành
+                total_time = self.calculate_total_time(self.current_schedule)
+
                 # Gửi xác nhận lịch tưới
                 confirmation_data = {
                     'schedule_name': self.current_schedule['name'],
-                    'status': 'confirmed'
+                    'status': 'confirmed',
+                    'total_time': total_time
                 }
                 self.update_feed('management', confirmation_data)
+
+                # In ra thông báo
+                print(f"Received watering schedule: {self.current_schedule['name']}")
+                print(f"Estimated total time to complete schedule: {total_time} seconds")
 
                 self.state = self.FERTILIZING
                 self.current_mixer = 0
