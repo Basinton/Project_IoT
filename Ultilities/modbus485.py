@@ -20,6 +20,8 @@ def initialize_modbus(port='/dev/ttyUSB0', baudrate=9600, timeout=1):
     if ser is None:
         try:
             ser = serial.Serial(port=port, baudrate=baudrate, timeout=timeout)
+            ser.reset_input_buffer()  # Xóa buffer phản hồi
+            ser.reset_output_buffer() # Xóa buffer gửi đi
             print(f"Port {port} opened successfully")
         except serial.SerialException as e:
             print(f"Failed to open port {port}: {e}")
