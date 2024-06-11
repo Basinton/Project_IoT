@@ -95,8 +95,7 @@ class WaterManagementTask:
         total_time = (fertilizer1_time + fertilizer2_time + fertilizer3_time +
                     mixing_time + pump_in_time + pump_out_time + area_selection_time)
 
-        # Thêm khoảng thời gian đệm, ví dụ 15% của tổng thời gian
-        buffer_time = total_time * 0.15
+        buffer_time = total_time * 0.16
         total_time_with_buffer = total_time + buffer_time
 
         return total_time_with_buffer
