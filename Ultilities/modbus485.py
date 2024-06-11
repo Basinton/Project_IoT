@@ -68,6 +68,8 @@ def setDevice(ser, device_id, state):
     command = generate_command(device_id, state)
     print(f"Sending command (Device {device_id}, {'ON' if state else 'OFF'}): {command}")
     ser.write(command)
+    ser.reset_input_buffer()  # Xóa buffer phản hồi
+    ser.reset_output_buffer() # Xóa buffer gửi đi
     timer.start(100)  # Set timer for 100 milliseconds
     while not timer.is_expired():
         pass
@@ -80,6 +82,8 @@ def read_sensor(ser, command):
     command_with_crc = add_crc16(command)
     print(f"Sending command to sensor: {command_with_crc}")
     ser.write(command_with_crc)
+    ser.reset_input_buffer()  # Xóa buffer phản hồi
+    ser.reset_output_buffer() # Xóa buffer gửi đi
     timer.start(100)  # Set timer for 100 milliseconds
     while not timer.is_expired():
         pass
