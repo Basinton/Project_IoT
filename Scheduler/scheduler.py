@@ -2,7 +2,7 @@ import time
 from Scheduler.task import Task
 
 class Scheduler:
-    TICK = 10  # Giảm giá trị TICK để giảm độ trễ
+    TICK = 100
     SCH_MAX_TASKS = 40
     SCH_tasks_G = []
     current_index_task = 0

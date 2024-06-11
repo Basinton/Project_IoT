@@ -66,7 +66,7 @@ def setDevice(ser, device_id, state):
     command = generate_command(device_id, state)
     print(f"Sending command (Device {device_id}, {'ON' if state else 'OFF'}): {command}")
     ser.write(command)
-    timer.start(50)  # Set timer for 50 milliseconds
+    timer.start(70)  # Set timer for 50 milliseconds
     while not timer.is_expired():
         pass
     response = serial_read_data(ser)
@@ -76,7 +76,7 @@ def read_sensor(ser, command):
     command_with_crc = add_crc16(command)
     print(f"Sending command to sensor: {command_with_crc}")
     ser.write(command_with_crc)
-    timer.start(100)  # Set timer for 50 milliseconds
+    timer.start(70)  # Set timer for 50 milliseconds
     while not timer.is_expired():
         pass
     response = serial_read_data(ser)
