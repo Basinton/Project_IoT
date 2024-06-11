@@ -87,9 +87,12 @@ class WaterManagementTask:
         
                 # Đặt múi giờ của Thành phố Hồ Chí Minh (UTC+7)
                 hcm_tz = timezone(timedelta(hours=7))
+                
+                # Lấy thời gian hiện tại theo múi giờ UTC+7
+                current_time = datetime.now(hcm_tz)
         
-                # So sánh thời gian với múi giờ UTC+7
-                if created_at > datetime.now(hcm_tz):
+                # So sánh nếu lịch tưới được tạo trước hiện tại 1 phút
+                if created_at > current_time - timedelta(minutes=1):
                     return latest_entry
         return None
 
