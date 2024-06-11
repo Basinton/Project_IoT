@@ -8,16 +8,15 @@ import PrivateTasks.water_management_task
 from Scheduler.scheduler import Scheduler
 import Ultilities.modbus485 as modbus485
 from Ultilities.softwaretimer import softwaretimer
-import threading
-from App.app import app
 
 AIO_USERNAME = 'BasintonDinh'
 AIO_KEY = 'abc'
+AIO_SCHEDULE_FEED = 'iot-project.app'
+AIO_SENSOR_FEED = 'iot-project.gateway'
 
 # Initialize the serial port once
 modbus485.initialize_modbus()
 
-# Tạo instance của WaterManagementTask
 watermanagement = None
 
 if modbus485.ser:
@@ -27,22 +26,19 @@ if modbus485.ser:
     scheduler.SCH_Init()
 
     ledblink_task = PrivateTasks.led_blinky_task.LedBlinkyTask()
-    watermonitoring = PrivateTasks.water_monitoring_task.WaterMonitoringTask(watermonitoring_timer, modbus485, AIO_USERNAME, AIO_KEY)
+    watermonitoring = PrivateTasks.water_monitoring_task.WaterMonitoringTask(watermonitoring_timer, modbus485.ser, AIO_USERNAME, AIO_KEY, AIO_SENSOR_FEED)
     main_ui = PrivateTasks.main_ui_task.Main_UI(watermonitoring)
     rapidoserver = PrivateTasks.rapido_server_task.RapidoServerTask()
-    watermanagement = PrivateTasks.water_management_task.WaterManagementTask(modbus485, main_ui.notification_func)
+    watermanagement = PrivateTasks.water_management_task.WaterManagementTask(modbus485, main_ui.notification_func, AIO_USERNAME, AIO_KEY, AIO_SCHEDULE_FEED)
 
     scheduler.SCH_Add_Task(ledblink_task.run, 0, 1000)
-    scheduler.SCH_Add_Task(watermonitoring.run, 0, 1000)
+    scheduler.SCH_Add_Task(watermonitoring.run, 0, 10000)
     scheduler.SCH_Add_Task(main_ui.run, 0, 5000)
     scheduler.SCH_Add_Task(rapidoserver.run, 0, 5000)
     scheduler.SCH_Add_Task(watermanagement.run, 0, 10000)
 
     print("Starting scheduler loop")
     try:
-        # Chạy Flask trong một luồng riêng biệt
-        threading.Thread(target=app.run, kwargs={'host': '0.0.0.0', 'port': 5000}).start()
-        
         while True:
             scheduler.SCH_Update()
             scheduler.SCH_Dispatch_Tasks()

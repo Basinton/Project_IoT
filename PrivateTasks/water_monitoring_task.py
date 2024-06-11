@@ -1,29 +1,21 @@
 from Adafruit_IO import Client, Feed, RequestError
+import json
+import Ultilities.modbus485 as modbus485
 
 class WaterMonitoringTask:
-    def __init__(self, timer, serial_port, aio_username, aio_key):
+    def __init__(self, timer, serial_port, aio_username, aio_key, aio_sensor_feed):
         self.timer = timer
         self.serial_port = serial_port
         self.aio = Client(aio_username, aio_key)
 
         # Initialize feeds
         self.feeds = {
-            'iot-project.fertilizer1-mixer': self.init_feed('iot-project.fertilizer1-mixer'),
-            'iot-project.fertilizer2-mixer': self.init_feed('iot-project.fertilizer2-mixer'),
-            'iot-project.fertilizer3-mixer': self.init_feed('iot-project.fertilizer3-mixer'),
-            'iot-project.area-select': self.init_feed('iot-project.area-select'),
-            'iot-project.pump-in': self.init_feed('iot-project.pump-in'),
-            'iot-project.pump-out': self.init_feed('iot-project.pump-out')
+            'sensor-data': self.init_feed(aio_sensor_feed)
         }
 
         # Maintain previous states to detect changes
         self.previous_states = {
-            'iot-project.fertilizer1-mixer': None,
-            'iot-project.fertilizer2-mixer': None,
-            'iot-project.fertilizer3-mixer': None,
-            'iot-project.area-select': None,
-            'iot-project.pump-in': None,
-            'iot-project.pump-out': None
+            'sensor-data': None
         }
 
     def init_feed(self, feed_name):
@@ -35,48 +27,34 @@ class WaterMonitoringTask:
 
     def update_feed(self, feed_name, value):
         if feed_name in self.feeds:
-            if self.previous_states[feed_name] != value:
-                self.aio.send_data(self.feeds[feed_name], value)  # Use feed key to send data
-                self.previous_states[feed_name] = value  # Update the previous state
+            json_value = json.dumps(value)
+            if self.previous_states[feed_name] != json_value:
+                self.aio.send_data(self.feeds[feed_name], json_value)  # Use feed key to send data
+                self.previous_states[feed_name] = json_value  # Update the previous state
 
-    def monitor_fertilizer_mixers(self):
-        # Example function to read and update fertilizer mixers
-        mixer1_state = self.read_mixer_state(1)  # Replace with actual logic to get mixer state
-        self.update_feed('iot-project.fertilizer1-mixer', mixer1_state)
+    def read_temperature(self):
+        return modbus485.readTemperature()
 
-        mixer2_state = self.read_mixer_state(2)
-        self.update_feed('iot-project.fertilizer2-mixer', mixer2_state)
+    def read_humidity(self):
+        return modbus485.readMoisture()
 
-        mixer3_state = self.read_mixer_state(3)
-        self.update_feed('iot-project.fertilizer3-mixer', mixer3_state)
+    def read_water_amount(self):
+        # Placeholder function to simulate reading water amount
+        return 1000  # Replace with actual reading in ml
 
-    def read_mixer_state(self, mixer_id):
-        # Placeholder function to simulate reading mixer state
-        return 'ON' if mixer_id == 1 else 'OFF'  # Replace with actual reading
+    def monitor_sensors(self):
+        temperature = self.read_temperature()
+        humidity = self.read_humidity()
+        water_amount = self.read_water_amount()
 
-    def monitor_area_select(self):
-        # Example function to read and update area select
-        area_state = self.read_area_state()  # Replace with actual logic to get area state
-        self.update_feed('iot-project.area-select', area_state)
+        sensor_data = {
+            'temperature': temperature,
+            'humidity': humidity,
+            'water_amount': water_amount
+        }
 
-    def read_area_state(self):
-        # Placeholder function to simulate reading area state
-        return 1  # Replace with actual reading
-
-    def monitor_pumps(self):
-        # Example function to read and update pumps
-        pump_in_state = self.read_pump_state('in')  # Replace with actual logic to get pump state
-        self.update_feed('iot-project.pump-in', pump_in_state)
-
-        pump_out_state = self.read_pump_state('out')
-        self.update_feed('iot-project.pump-out', pump_out_state)
-
-    def read_pump_state(self, pump_type):
-        # Placeholder function to simulate reading pump state
-        return 'ON' if pump_type == 'in' else 'OFF'  # Replace with actual reading
+        self.update_feed('sensor-data', sensor_data)
 
     def run(self):
-        self.monitor_fertilizer_mixers()
-        self.monitor_area_select()
-        self.monitor_pumps()
+        self.monitor_sensors()
         # Add additional monitoring and updates as needed
