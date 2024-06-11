@@ -57,7 +57,7 @@ class WaterManagementTask:
     def calculate_time(self, ml):
         return ml * 0.01 * 1000  # Convert to milliseconds
 
-    def fetch_schedules(self):
+    def check_new_data(self):
         url = f"https://io.adafruit.com/api/v2/{self.aio_username}/feeds/{self.aio_schedule_feed}/data"
         headers = {
             'X-AIO-Key': self.aio_key
@@ -65,16 +65,23 @@ class WaterManagementTask:
         response = requests.get(url, headers=headers)
         if response.status_code == 200:
             feed_data = response.json()
-            for item in feed_data:
-                created_at = datetime.fromisoformat(item['created_at'].replace('Z', '+00:00'))
+            if feed_data:
+                latest_entry = feed_data[0]
+                created_at = datetime.fromisoformat(latest_entry['created_at'].replace('Z', '+00:00'))
                 if created_at > self.last_fetched_time:
-                    schedule = json.loads(item['value'])
-                    if schedule['name'] != self.last_completed_schedule_name:
-                        self.schedules.append(schedule)
-                        self.last_fetched_time = created_at
-            print("Fetched new schedules from Adafruit IO")
+                    return latest_entry
+        return None
+
+    def fetch_schedules(self):
+        latest_entry = self.check_new_data()
+        if latest_entry:
+            schedule = json.loads(latest_entry['value'])
+            if schedule['name'] != self.last_completed_schedule_name:
+                self.schedules.append(schedule)
+                self.last_fetched_time = datetime.fromisoformat(latest_entry['created_at'].replace('Z', '+00:00'))
+                print("Fetched new schedules from Adafruit IO")
         else:
-            print("Failed to fetch schedules from Adafruit IO")
+            print("No new data on Adafruit IO")
 
     def calculate_total_time(self, schedule):
         fertilizer1_time = int(schedule['fertilizer1']) * 0.01
