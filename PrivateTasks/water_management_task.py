@@ -93,9 +93,14 @@ class WaterManagementTask:
         area_selection_time = 1  # Time to select area in seconds
 
         total_time = (fertilizer1_time + fertilizer2_time + fertilizer3_time +
-                      mixing_time + pump_in_time + pump_out_time + area_selection_time)
+                    mixing_time + pump_in_time + pump_out_time + area_selection_time)
 
-        return total_time
+        # Thêm khoảng thời gian đệm, ví dụ 15% của tổng thời gian
+        buffer_time = total_time * 0.15
+        total_time_with_buffer = total_time + buffer_time
+
+        return total_time_with_buffer
+
 
     def run(self):
         if self.state == self.IDLE:
