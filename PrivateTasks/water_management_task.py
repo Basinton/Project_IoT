@@ -1,7 +1,7 @@
 import requests
 import json
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import Ultilities.modbus485 as modbus485
 from Ultilities.softwaretimer import softwaretimer
 from Adafruit_IO import Client, Feed, RequestError
@@ -83,9 +83,14 @@ class WaterManagementTask:
             feed_data = response.json()
             if feed_data:
                 latest_entry = feed_data[0]
-                # created_at = datetime.fromisoformat(latest_entry['created_at'].replace('Z', '+00:00'))
-                # if created_at > self.last_fetched_time and created_at > datetime.now(timezone.utc):
-                return latest_entry
+                created_at = datetime.fromisoformat(latest_entry['created_at'].replace('Z', '+00:00'))
+        
+                # Đặt múi giờ của Thành phố Hồ Chí Minh (UTC+7)
+                hcm_tz = timezone(timedelta(hours=7))
+        
+                # So sánh thời gian với múi giờ UTC+7
+                if created_at > datetime.now(hcm_tz):
+                    return latest_entry
         return None
 
     def fetch_schedules(self):
