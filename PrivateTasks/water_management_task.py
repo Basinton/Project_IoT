@@ -56,13 +56,13 @@ class WaterManagementTask:
 
     def calculate_total_time(self, schedule):
         # Calculate individual times with an additional 5% buffer
-        fertilizer1_time = int(schedule['fertilizer1']) * 0.01 * 1.05
-        fertilizer2_time = int(schedule['fertilizer2']) * 0.01 * 1.05
-        fertilizer3_time = int(schedule['fertilizer3']) * 0.01 * 1.05
+        fertilizer1_time = int(schedule['fertilizer1']) * 0.01
+        fertilizer2_time = int(schedule['fertilizer2']) * 0.01
+        fertilizer3_time = int(schedule['fertilizer3']) * 0.01
         mixing_time = 10  # Mixing time in seconds
-        pump_in_time = int(schedule['waterAmount']) * 0.01 * 1.05
+        pump_in_time = int(schedule['waterAmount']) * 0.01
         pump_out_time = pump_in_time
-        area_selection_time = 1 * 1.05  # Time to select area in seconds
+        area_selection_time = 1  # Time to select area in seconds
 
         total_time = (fertilizer1_time + fertilizer2_time + fertilizer3_time +
                       mixing_time + pump_in_time + pump_out_time + area_selection_time)
@@ -110,13 +110,13 @@ class WaterManagementTask:
                 total_time = self.calculate_total_time(self.current_schedule)
 
                 # Tính thời gian cho từng giai đoạn
-                self.fertilizer1_time = int(self.current_schedule['fertilizer1']) * 0.01 * 1.05 * 1000  # convert to milliseconds
-                self.fertilizer2_time = int(self.current_schedule['fertilizer2']) * 0.01 * 1.05 * 1000  # convert to milliseconds
-                self.fertilizer3_time = int(self.current_schedule['fertilizer3']) * 0.01 * 1.05 * 1000  # convert to milliseconds
+                self.fertilizer1_time = int(self.current_schedule['fertilizer1']) * 0.01 * 1000  # convert to milliseconds
+                self.fertilizer2_time = int(self.current_schedule['fertilizer2']) * 0.01 * 1000  # convert to milliseconds
+                self.fertilizer3_time = int(self.current_schedule['fertilizer3']) * 0.01 * 1000  # convert to milliseconds
                 self.mixing_time = 10 * 1000  # Mixing time in milliseconds
-                self.pump_in_time = int(self.current_schedule['waterAmount']) * 0.01 * 1.05 * 1000  # convert to milliseconds
+                self.pump_in_time = int(self.current_schedule['waterAmount']) * 0.01 * 1000  # convert to milliseconds
                 self.pump_out_time = self.pump_in_time
-                self.area_selection_time = 1 * 1.05 * 1000  # convert to milliseconds
+                self.area_selection_time = 1 * 1000  # convert to milliseconds
 
                 # Gửi xác nhận lịch tưới
                 confirmation_data = {
