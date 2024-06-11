@@ -37,7 +37,7 @@ if modbus485.ser:
     scheduler.SCH_Add_Task(watermonitoring.run, 0, 10000)  # Chạy task này mỗi 10 giây
     # scheduler.SCH_Add_Task(main_ui.run, 0, 5000)
     # scheduler.SCH_Add_Task(rapidoserver.run, 0, 5000)
-    scheduler.SCH_Add_Task(watermanagement.run, 0, 1000)
+    scheduler.SCH_Add_Task(watermanagement.run, 0, 50)
 
     print("Starting scheduler loop")
     try:
