@@ -95,7 +95,7 @@ class WaterManagementTask:
             if schedule['name'] != self.last_completed_schedule_name:
                 self.schedules.append(schedule)
                 self.last_fetched_time = datetime.fromisoformat(latest_entry['created_at'].replace('Z', '+00:00'))
-                print(f"Fetched new schedule: {schedule['name']} at {self.last_fetched_time}")
+                print(f"Fetched new schedule: {schedule['name']}")
         else:
             print("No new data on Adafruit IO")
 
@@ -128,13 +128,13 @@ class WaterManagementTask:
 
                 # In ra thông báo
                 print(f"Received watering schedule: {self.current_schedule['name']}")
-                print(f"Estimated total time to complete schedule: {total_time} seconds")
+                print(f"Estimated total time to complete schedule: {round(total_time, 2)} seconds")
 
                 self.state = self.FERTILIZING
                 self.current_mixer = 0
                 self.timer.start(self.fertilizer1_time)
                 self.activate_relay(self.mixer_ids[self.current_mixer], True)
-                print(f"Started fertilizing with mixer {self.mixer_ids[self.current_mixer]} for {self.fertilizer1_time / 1000} seconds")
+                print(f"Started fertilizing with mixer {self.mixer_ids[self.current_mixer]}")
 
         elif self.state == self.FERTILIZING:
             if self.timer.is_expired():
@@ -144,7 +144,7 @@ class WaterManagementTask:
                     fertilizer_time = getattr(self, f'fertilizer{self.current_mixer + 1}_time')
                     self.timer.start(fertilizer_time)
                     self.activate_relay(self.mixer_ids[self.current_mixer], True)
-                    print(f"Started fertilizing with mixer {self.mixer_ids[self.current_mixer]} for {fertilizer_time / 1000} seconds")
+                    print(f"Started fertilizing with mixer {self.mixer_ids[self.current_mixer]}")
                 else:
                     self.state = self.MIXING
                     self.timer.start(self.mixing_time)  # Time in milliseconds
@@ -155,7 +155,7 @@ class WaterManagementTask:
                 self.state = self.PUMP_IN
                 self.timer.start(self.pump_in_time)
                 self.activate_relay(self.pump_in_relay_id, True)
-                print(f"Started pump-in with relay {self.pump_in_relay_id} for {self.pump_in_time / 1000} seconds")
+                print(f"Started pump-in with relay {self.pump_in_relay_id}")
 
         elif self.state == self.PUMP_IN:
             if self.timer.is_expired():
@@ -173,7 +173,7 @@ class WaterManagementTask:
                 self.state = self.PUMP_OUT
                 self.timer.start(self.pump_out_time)
                 self.activate_relay(self.pump_out_relay_id, True)
-                print(f"Started pump-out with relay {self.pump_out_relay_id} for {self.pump_out_time / 1000} seconds")
+                print(f"Started pump-out with relay {self.pump_out_relay_id}")
 
         elif self.state == self.PUMP_OUT:
             if self.timer.is_expired():
