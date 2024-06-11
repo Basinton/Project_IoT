@@ -84,18 +84,18 @@ class WaterManagementTask:
             print("No new data on Adafruit IO")
 
     def calculate_total_time(self, schedule):
-        fertilizer1_time = int(schedule['fertilizer1']) * 0.01
-        fertilizer2_time = int(schedule['fertilizer2']) * 0.01
-        fertilizer3_time = int(schedule['fertilizer3']) * 0.01
+        fertilizer1_time = int(schedule['fertilizer1']) * 0.01 * 1.05
+        fertilizer2_time = int(schedule['fertilizer2']) * 0.01 * 1.05
+        fertilizer3_time = int(schedule['fertilizer3']) * 0.01 * 1.05
         mixing_time = 10  # Mixing time in seconds
-        pump_in_time = int(schedule['waterAmount']) * 0.01
+        pump_in_time = int(schedule['waterAmount']) * 0.01 * 1.05
         pump_out_time = pump_in_time
-        area_selection_time = 1  # Time to select area in seconds
+        area_selection_time = 1 * 1.05  # Time to select area in seconds
 
         total_time = (fertilizer1_time + fertilizer2_time + fertilizer3_time +
                     mixing_time + pump_in_time + pump_out_time + area_selection_time)
 
-        buffer_time = total_time * 0.16
+        buffer_time = total_time * 0.15
         total_time_with_buffer = total_time + buffer_time
 
         return total_time_with_buffer
