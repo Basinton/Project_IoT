@@ -48,7 +48,7 @@ class WaterManagementTask:
 
     def update_feed(self, feed_name, value):
         if feed_name in self.feeds:
-            json_value = json.dumps(value)
+            json_value = json.dumps(value, ensure_ascii=False)  # Ensure non-ASCII characters are handled correctly
             self.aio.send_data(self.feeds[feed_name], json_value)  # Use feed key to send data
 
     def activate_relay(self, relay_id, state):
